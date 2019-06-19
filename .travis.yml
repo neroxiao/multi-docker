@@ -1,0 +1,25 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t nejiang/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true nejiang/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t nejiang/multi-client ./client
+  - docker build -t nejiang/multi-nginx ./nginx
+  - docker build -t nejiang/multi-server ./server
+  - docker build -t nejiang/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push nejiang/multi-client
+  - docker push nejiang/multi-nginx
+  - docker push nejiang/multi-server
+  - docker push nejiang/multi-worker
+
+
+
+
